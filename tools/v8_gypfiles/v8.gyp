@@ -646,6 +646,11 @@
               '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_header_set.\\"v8_internal_headers\\".*?v8_enable_webassembly.*?sources \\+= ")',
             ],
           }],
+          ['v8_enable_wasm_simd256_revec==1', {
+            'sources': [
+              '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_header_set.\\"v8_internal_headers\\".*?v8_enable_wasm_simd256_revec.*?sources \\+= ")',
+            ],
+          }],
           ['v8_enable_i18n_support==1', {
             'sources': [
               '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_header_set.\\"v8_internal_headers\\".*?v8_enable_i18n_support.*?sources \\+= ")',
@@ -880,6 +885,11 @@
           ['v8_enable_webassembly==1', {
             'sources': [
               '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_compiler_sources =.*?v8_enable_webassembly.*?v8_compiler_sources \\+= ")',
+            ],
+          }],
+          ['v8_enable_wasm_simd256_revec==1', {
+            'sources': [
+              '<!@pymod_do_main(GN-scraper "<(V8_ROOT)/BUILD.gn"  "v8_compiler_sources =.*?v8_enable_wasm_simd256_revec.*?v8_compiler_sources \\+= ")',
             ],
           }],
         ],
@@ -2391,7 +2401,6 @@
         '<(ABSEIL_ROOT)/absl/strings/cord_buffer.cc',
         '<(ABSEIL_ROOT)/absl/strings/escaping.h',
         '<(ABSEIL_ROOT)/absl/strings/escaping.cc',
-        '<(ABSEIL_ROOT)/absl/strings/has_absl_stringify.h',
         '<(ABSEIL_ROOT)/absl/strings/has_ostream_operator.h',
         '<(ABSEIL_ROOT)/absl/strings/internal/charconv_bigint.h',
         '<(ABSEIL_ROOT)/absl/strings/internal/charconv_bigint.cc',

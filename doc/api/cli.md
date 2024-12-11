@@ -25,16 +25,14 @@ For more info about `node inspect`, see the [debugger][] documentation.
 
 The program entry point is a specifier-like string. If the string is not an
 absolute path, it's resolved as a relative path from the current working
-directory. That path is then resolved by [CommonJS][] module loader, or by the
-[ES module loader][Modules loaders] if [`--experimental-default-type=module`][]
-is passed. If no corresponding file is found, an error is thrown.
+directory. That path is then resolved by [CommonJS][] module loader. If no
+corresponding file is found, an error is thrown.
 
 If a file is found, its path will be passed to the
 [ES module loader][Modules loaders] under any of the following conditions:
 
 * The program was started with a command-line flag that forces the entry
-  point to be loaded with ECMAScript module loader, such as `--import` or
-  [`--experimental-default-type=module`][].
+  point to be loaded with ECMAScript module loader, such as `--import`.
 * The file has an `.mjs` extension.
 * The file does not have a `.cjs` extension, and the nearest parent
   `package.json` file contains a top-level [`"type"`][] field with a value of
@@ -47,9 +45,8 @@ Otherwise, the file is loaded using the CommonJS module loader. See
 
 When loading, the [ES module loader][Modules loaders] loads the program
 entry point, the `node` command will accept as input only files with `.js`,
-`.mjs`, or `.cjs` extensions; with `.wasm` extensions when
-[`--experimental-wasm-modules`][] is enabled; and with no extension when
-[`--experimental-default-type=module`][] is passed.
+`.mjs`, or `.cjs` extensions; and with `.wasm` extensions when
+[`--experimental-wasm-modules`][] is enabled.
 
 ## Options
 
@@ -556,6 +553,18 @@ Affects the default output directory of:
 * [`--heap-prof-dir`][]
 * [`--redirect-warnings`][]
 
+### `--disable-proto=mode`
+
+<!-- YAML
+added:
+ - v13.12.0
+ - v12.17.0
+-->
+
+Disable the `Object.prototype.__proto__` property. If `mode` is `delete`, the
+property is removed entirely. If `mode` is `throw`, accesses to the
+property throw an exception with the code `ERR_PROTO_ACCESS`.
+
 ### `--disable-warning=code-or-type`
 
 > Stability: 1.1 - Active development
@@ -650,18 +659,6 @@ users can at least run WebAssembly (with less optimal performance)
 when the virtual memory address space available to their Node.js
 process is lower than what the V8 WebAssembly memory cage needs.
 
-### `--disable-proto=mode`
-
-<!-- YAML
-added:
- - v13.12.0
- - v12.17.0
--->
-
-Disable the `Object.prototype.__proto__` property. If `mode` is `delete`, the
-property is removed entirely. If `mode` is `throw`, accesses to the
-property throw an exception with the code `ERR_PROTO_ACCESS`.
-
 ### `--disallow-code-generation-from-strings`
 
 <!-- YAML
@@ -671,25 +668,6 @@ added: v9.8.0
 Make built-in language features like `eval` and `new Function` that generate
 code from strings throw an exception instead. This does not affect the Node.js
 `node:vm` module.
-
-### `--expose-gc`
-
-<!-- YAML
-added:
-  - v22.3.0
-  - v20.18.0
--->
-
-> Stability: 1 - Experimental. This flag is inherited from V8 and is subject to
-> change upstream.
-
-This flag will expose the gc extension from V8.
-
-```js
-if (globalThis.gc) {
-  globalThis.gc();
-}
-```
 
 ### `--dns-result-order=order`
 
@@ -797,6 +775,15 @@ node --entry-url --experimental-strip-types 'file.ts?query#hash'
 node --entry-url 'data:text/javascript,console.log("Hello")'
 ```
 
+### `--env-file-if-exists=config`
+
+<!-- YAML
+added: v22.9.0
+-->
+
+Behavior is the same as [`--env-file`][], but an error is not thrown if the file
+does not exist.
+
 ### `--env-file=config`
 
 > Stability: 1.1 - Active development
@@ -864,15 +851,6 @@ export USERNAME="nodejs" # will result in `nodejs` as the value.
 If you want to load environment variables from a file that may not exist, you
 can use the [`--env-file-if-exists`][] flag instead.
 
-### `--env-file-if-exists=config`
-
-<!-- YAML
-added: v22.9.0
--->
-
-Behavior is the same as [`--env-file`][], but an error is not thrown if the file
-does not exist.
-
 ### `-e`, `--eval "script"`
 
 <!-- YAML
@@ -895,49 +873,6 @@ and `"` are usable.
 
 It is possible to run code containing inline types by passing
 [`--experimental-strip-types`][].
-
-### `--experimental-default-type=type`
-
-<!-- YAML
-added:
-  - v21.0.0
-  - v20.10.0
-  - v18.19.0
--->
-
-> Stability: 1.0 - Early development
-
-Define which module system, `module` or `commonjs`, to use for the following:
-
-* String input provided via `--eval` or STDIN, if `--input-type` is unspecified.
-
-* Files ending in `.js` or with no extension, if there is no `package.json` file
-  present in the same folder or any parent folder.
-
-* Files ending in `.js` or with no extension, if the nearest parent
-  `package.json` field lacks a `"type"` field; unless the `package.json` folder
-  or any parent folder is inside a `node_modules` folder.
-
-In other words, `--experimental-default-type=module` flips all the places where
-Node.js currently defaults to CommonJS to instead default to ECMAScript modules,
-with the exception of folders and subfolders below `node_modules`, for backward
-compatibility.
-
-Under `--experimental-default-type=module` and `--experimental-wasm-modules`,
-files with no extension will be treated as WebAssembly if they begin with the
-WebAssembly magic number (`\0asm`); otherwise they will be treated as ES module
-JavaScript.
-
-### `--experimental-transform-types`
-
-<!-- YAML
-added: v22.7.0
--->
-
-> Stability: 1.1 - Active development
-
-Enables the transformation of TypeScript-only syntax into JavaScript code.
-Implies `--experimental-strip-types` and `--enable-source-maps`.
 
 ### `--experimental-eventsource`
 
@@ -1018,6 +953,18 @@ following permissions are restricted:
 * WASI - manageable through [`--allow-wasi`][] flag
 * Addons - manageable through [`--allow-addons`][] flag
 
+### `--experimental-print-required-tla`
+
+<!-- YAML
+added:
+  - v22.0.0
+  - v20.17.0
+-->
+
+If the ES module being `require()`'d contains top-level `await`, this flag
+allows Node.js to evaluate the module, try to locate the
+top-level awaits, and print their location to help users find them.
+
 ### `--experimental-require-module`
 
 <!-- YAML
@@ -1025,7 +972,9 @@ added:
   - v22.0.0
   - v20.17.0
 changes:
-  - version: v23.0.0
+  - version:
+    - v23.0.0
+    - v22.12.0
     pr-url: https://github.com/nodejs/node/pull/55085
     description: This is now true by default.
 -->
@@ -1114,6 +1063,17 @@ added:
 
 Enable module mocking in the test runner.
 
+### `--experimental-transform-types`
+
+<!-- YAML
+added: v22.7.0
+-->
+
+> Stability: 1.1 - Active development
+
+Enables the transformation of TypeScript-only syntax into JavaScript code.
+Implies `--experimental-strip-types` and `--enable-source-maps`.
+
 ### `--experimental-vm-modules`
 
 <!-- YAML
@@ -1158,6 +1118,25 @@ added: v22.4.0
 -->
 
 Enable experimental [`Web Storage`][] support.
+
+### `--expose-gc`
+
+<!-- YAML
+added:
+  - v22.3.0
+  - v20.18.0
+-->
+
+> Stability: 1 - Experimental. This flag is inherited from V8 and is subject to
+> change upstream.
+
+This flag will expose the gc extension from V8.
+
+```js
+if (globalThis.gc) {
+  globalThis.gc();
+}
+```
 
 ### `--force-context-aware`
 
@@ -1404,7 +1383,7 @@ added: v12.0.0
 
 This configures Node.js to interpret `--eval` or `STDIN` input as CommonJS or
 as an ES module. Valid values are `"commonjs"` or `"module"`. The default is
-`"commonjs"` unless [`--experimental-default-type=module`][] is used.
+`"commonjs"`.
 
 The REPL does not support this option. Usage of `--input-type=module` with
 [`--print`][] will throw an error, as `--print` does not support ES module
@@ -1436,20 +1415,6 @@ When enabled, the parser will accept the following:
 
 All the above will expose your application to request smuggling
 or poisoning attack. Avoid using this option.
-
-### `--inspect[=[host:]port]`
-
-<!-- YAML
-added: v6.3.0
--->
-
-Activate inspector on `host:port`. Default is `127.0.0.1:9229`. If port `0` is
-specified, a random available port will be used.
-
-V8 inspector integration allows tools such as Chrome DevTools and IDEs to debug
-and profile Node.js instances. The tools attach to Node.js instances via a
-tcp port and communicate using the [Chrome DevTools Protocol][].
-See [V8 Inspector integration for Node.js][] for further explanation on Node.js debugger.
 
 <!-- Anchor to make sure old links find a target -->
 
@@ -1517,6 +1482,20 @@ Activate inspector on `host:port` and wait for debugger to be attached.
 Default `host:port` is `127.0.0.1:9229`. If port `0` is specified,
 a random available port will be used.
 
+See [V8 Inspector integration for Node.js][] for further explanation on Node.js debugger.
+
+### `--inspect[=[host:]port]`
+
+<!-- YAML
+added: v6.3.0
+-->
+
+Activate inspector on `host:port`. Default is `127.0.0.1:9229`. If port `0` is
+specified, a random available port will be used.
+
+V8 inspector integration allows tools such as Chrome DevTools and IDEs to debug
+and profile Node.js instances. The tools attach to Node.js instances via a
+tcp port and communicate using the [Chrome DevTools Protocol][].
 See [V8 Inspector integration for Node.js][] for further explanation on Node.js debugger.
 
 ### `-i`, `--interactive`
@@ -1657,7 +1636,9 @@ added:
   - v22.0.0
   - v20.17.0
 changes:
-  - version: v23.0.0
+  - version:
+    - v23.0.0
+    - v22.12.0
     pr-url: https://github.com/nodejs/node/pull/55085
     description: This is now false by default.
 -->
@@ -1673,7 +1654,7 @@ See [Loading ECMAScript modules using `require()`][].
 <!-- YAML
 added: v22.5.0
 changes:
-  - version: REPLACEME
+  - version: v23.4.0
     pr-url: https://github.com/nodejs/node/pull/55890
     description: SQLite is unflagged but still experimental.
 -->
@@ -1878,18 +1859,6 @@ changes:
 -->
 
 Identical to `-e` but prints the result.
-
-### `--experimental-print-required-tla`
-
-<!-- YAML
-added:
-  - v22.0.0
-  - v20.17.0
--->
-
-If the ES module being `require()`'d contains top-level `await`, this flag
-allows Node.js to evaluate the module, try to locate the
-top-level awaits, and print their location to help users find them.
 
 ### `--prof`
 
@@ -2166,6 +2135,17 @@ The following environment variables are set when running a script with `--run`:
 * `NODE_RUN_PACKAGE_JSON_PATH`: The path to the `package.json` that is being
   processed.
 
+### `--secure-heap-min=n`
+
+<!-- YAML
+added: v15.6.0
+-->
+
+When using `--secure-heap`, the `--secure-heap-min` flag specifies the
+minimum allocation from the secure heap. The minimum value is `2`.
+The maximum value is the lesser of `--secure-heap` or `2147483647`.
+The value given must be a power of two.
+
 ### `--secure-heap=n`
 
 <!-- YAML
@@ -2190,17 +2170,6 @@ The secure heap is disabled by default.
 The secure heap is not available on Windows.
 
 See [`CRYPTO_secure_malloc_init`][] for more details.
-
-### `--secure-heap-min=n`
-
-<!-- YAML
-added: v15.6.0
--->
-
-When using `--secure-heap`, the `--secure-heap-min` flag specifies the
-minimum allocation from the secure heap. The minimum value is `2`.
-The maximum value is the lesser of `--secure-heap` or `2147483647`.
-The value given must be a power of two.
 
 ### `--snapshot-blob=path`
 
@@ -2456,7 +2425,7 @@ subtests inherit this value from their parent. The default value is `Infinity`.
 <!-- YAML
 added: v22.3.0
 changes:
-  - version: REPLACEME
+  - version: v23.4.0
     pr-url: https://github.com/nodejs/node/pull/55897
     description: Snapsnot testing is no longer experimental.
 -->
@@ -2574,7 +2543,7 @@ Print stack traces for deprecations.
 ### `--trace-env`
 
 <!-- YAML
-added: REPLACEME
+added: v23.4.0
 -->
 
 Print information about any access to environment variables done in the current Node.js
@@ -2597,7 +2566,7 @@ To print the stack trace of the access, use `--trace-env-js-stack` and/or
 ### `--trace-env-js-stack`
 
 <!-- YAML
-added: REPLACEME
+added: v23.4.0
 -->
 
 In addition to what `--trace-env` does, this prints the JavaScript stack trace of the access.
@@ -2605,7 +2574,7 @@ In addition to what `--trace-env` does, this prints the JavaScript stack trace o
 ### `--trace-env-native-stack`
 
 <!-- YAML
-added: REPLACEME
+added: v23.4.0
 -->
 
 In addition to what `--trace-env` does, this prints the native stack trace of the access.
@@ -2912,11 +2881,6 @@ and `NODE_DISABLE_COLORS` environment variables are ignored.
 
 Any other value will result in colorized output being disabled.
 
-### `NO_COLOR=<any>`
-
-[`NO_COLOR`][]  is an alias for `NODE_DISABLE_COLORS`. The value of the
-environment variable is arbitrary.
-
 ### `NODE_COMPILE_CACHE=dir`
 
 <!-- YAML
@@ -3057,7 +3021,6 @@ one is included in the list below.
 * `--enable-source-maps`
 * `--entry-url`
 * `--experimental-abortcontroller`
-* `--experimental-default-type`
 * `--experimental-detect-module`
 * `--experimental-eventsource`
 * `--experimental-import-meta-resolve`
@@ -3323,6 +3286,11 @@ easier to instrument applications that call the `child_process.spawn()` family
 of functions. `NODE_V8_COVERAGE` can be set to an empty string, to prevent
 propagation.
 
+### `NO_COLOR=<any>`
+
+[`NO_COLOR`][]  is an alias for `NODE_DISABLE_COLORS`. The value of the
+environment variable is arbitrary.
+
 #### Coverage output
 
 Coverage is output as an array of [ScriptCoverage][] objects on the top-level
@@ -3507,19 +3475,9 @@ documented here:
 
 ### `--harmony-shadow-realm`
 
-### `--jitless`
-
 ### `--interpreted-frames-native-stack`
 
-### `--prof`
-
-### `--perf-basic-prof`
-
-### `--perf-basic-prof-only-functions`
-
-### `--perf-prof`
-
-### `--perf-prof-unwinding-info`
+### `--jitless`
 
 <!-- Anchor to make sure old links find a target -->
 
@@ -3571,6 +3529,16 @@ for MiB in 16 32 64 128; do
 done
 ```
 
+### `--perf-basic-prof`
+
+### `--perf-basic-prof-only-functions`
+
+### `--perf-prof`
+
+### `--perf-prof-unwinding-info`
+
+### `--prof`
+
 ### `--security-revert`
 
 ### `--stack-trace-limit=limit`
@@ -3620,7 +3588,6 @@ node --stack-trace-limit=12 -p -e "Error.stackTraceLimit" # prints 12
 [`--diagnostic-dir`]: #--diagnostic-dirdirectory
 [`--env-file-if-exists`]: #--env-file-if-existsconfig
 [`--env-file`]: #--env-fileconfig
-[`--experimental-default-type=module`]: #--experimental-default-typetype
 [`--experimental-sea-config`]: single-executable-applications.md#generating-single-executable-preparation-blobs
 [`--experimental-strip-types`]: #--experimental-strip-types
 [`--experimental-wasm-modules`]: #--experimental-wasm-modules

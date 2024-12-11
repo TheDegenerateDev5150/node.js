@@ -3737,6 +3737,9 @@ and [`crypto.setEngine()`][] all depend on this functionality from OpenSSL.
 
 <!-- YAML
 changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/55718
+    description: Runtime deprecation.
   - version:
     - v22.9.0
     - v20.18.0
@@ -3744,7 +3747,7 @@ changes:
     description: Documentation-only deprecation.
 -->
 
-Type: Documentation-only
+Type: Runtime
 
 Instantiating classes without the `new` qualifier exported by the `node:zlib` module is deprecated.
 It is recommended to use the `new` qualifier instead. This applies to all Zlib classes, such as `Deflate`,
@@ -3776,7 +3779,7 @@ It is recommended to use the `new` qualifier instead. This applies to all REPL c
 
 <!-- YAML
 changes:
-  - version: REPLACEME
+  - version: v23.4.0
     pr-url: https://github.com/nodejs/node/pull/55892
     description: Documentation-only.
 -->
@@ -3790,7 +3793,7 @@ will throw an error in a future version.
 
 <!-- YAML
 changes:
-  - version: REPLACEME
+  - version: v23.4.0
     pr-url: https://github.com/nodejs/node/pull/55545
     description: Documentation-only deprecation.
 -->
@@ -3803,7 +3806,7 @@ These properties are unconditionally `true`. Any checks based on these propertie
 
 <!-- YAML
 changes:
-  - version: REPLACEME
+  - version: v23.4.0
     pr-url: https://github.com/nodejs/node/pull/55545
     description: Documentation-only deprecation.
 -->
