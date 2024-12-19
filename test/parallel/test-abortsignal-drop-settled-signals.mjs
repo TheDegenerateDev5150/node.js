@@ -1,6 +1,7 @@
 // Flags: --expose_gc
 //
 import '../common/index.mjs';
+import { gcUntil } from '../common/gc.js';
 import { describe, it } from 'node:test';
 
 function makeSubsequentCalls(limit, done, holdReferences = false) {
@@ -64,6 +65,41 @@ function runShortLivedSourceSignal(limit, done) {
   run(1);
 };
 
+function runWithOrphanListeners(limit, done) {
+  let composedSignalRef;
+  const composedSignalRefs = [];
+  const handler = () => { };
+
+  function run(iteration) {
+    const ac = new AbortController();
+    if (iteration > limit) {
+      setImmediate(() => {
+        global.gc();
+        setImmediate(() => {
+          global.gc();
+
+          done(composedSignalRefs);
+        });
+      });
+      return;
+    }
+
+    composedSignalRef = new WeakRef(AbortSignal.any([ac.signal]));
+    composedSignalRef.deref().addEventListener('abort', handler);
+
+    const otherComposedSignalRef = new WeakRef(AbortSignal.any([composedSignalRef.deref()]));
+    otherComposedSignalRef.deref().addEventListener('abort', handler);
+
+    composedSignalRefs.push(composedSignalRef, otherComposedSignalRef);
+
+    setImmediate(() => {
+      run(iteration + 1);
+    });
+  }
+
+  run(1);
+}
+
 const limit = 10_000;
 
 describe('when there is a long-lived signal', () => {
@@ -106,17 +142,29 @@ it('drops settled dependant signals when signal is composite', (t, done) => {
   );
 
   setImmediate(() => {
-    global.gc();
+    global.gc({ execution: 'async' }).then(() => {
+      t.assert.strictEqual(composedSignalRef.deref(), undefined);
+      t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 2);
+      t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 1);
 
-    t.assert.strictEqual(composedSignalRef.deref(), undefined);
-    t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 2);
-    t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 1);
+      setImmediate(() => {
+        t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 0);
+        t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 0);
 
-    setImmediate(() => {
-      t.assert.strictEqual(controllers[0].signal[kDependantSignals].size, 0);
-      t.assert.strictEqual(controllers[1].signal[kDependantSignals].size, 0);
-
-      done();
+        done();
+      });
     });
+  });
+});
+
+it('drops settled signals even when there are listeners', (t, done) => {
+  runWithOrphanListeners(limit, async (signalRefs) => {
+    await gcUntil('all signals are GCed', () => {
+      const unGCedSignals = [...signalRefs].filter((ref) => ref.deref());
+
+      return unGCedSignals.length === 0;
+    });
+
+    done();
   });
 });
