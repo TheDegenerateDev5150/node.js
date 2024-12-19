@@ -113,13 +113,6 @@ void EnvironmentOptions::CheckOptions(std::vector<std::string>* errors,
     }
   }
 
-  if (!type.empty()) {
-    if (type != "commonjs" && type != "module") {
-      errors->push_back("--experimental-default-type must be "
-                        "\"module\" or \"commonjs\"");
-    }
-  }
-
   if (syntax_check_only && has_eval_string) {
     errors->push_back("either --check or --eval can be used, not both");
   }
@@ -140,6 +133,11 @@ void EnvironmentOptions::CheckOptions(std::vector<std::string>* errors,
 
   if (heap_snapshot_near_heap_limit < 0) {
     errors->push_back("--heapsnapshot-near-heap-limit must not be negative");
+  }
+
+  if (!trace_require_module.empty() && trace_require_module != "all" &&
+      trace_require_module != "no-node-modules") {
+    errors->push_back("invalid value for --trace-require-module");
   }
 
   if (test_runner) {
@@ -458,11 +456,12 @@ EnvironmentOptionsParser::EnvironmentOptionsParser() {
             "experimental ES Module import.meta.resolve() parentURL support",
             &EnvironmentOptions::experimental_import_meta_resolve,
             kAllowedInEnvvar);
-  AddOption("--experimental-permission",
+  AddOption("--permission",
             "enable the permission system",
-            &EnvironmentOptions::experimental_permission,
+            &EnvironmentOptions::permission,
             kAllowedInEnvvar,
             false);
+  AddAlias("--experimental-permission", "--permission");
   AddOption("--allow-fs-read",
             "allow permissions to read the filesystem",
             &EnvironmentOptions::allow_fs_read,
@@ -778,10 +777,13 @@ EnvironmentOptionsParser::EnvironmentOptionsParser() {
       &EnvironmentOptions::trace_env_native_stack,
       kAllowedInEnvvar);
 
-  AddOption("--experimental-default-type",
-            "set module system to use by default",
-            &EnvironmentOptions::type,
-            kAllowedInEnvvar);
+  AddOption(
+      "--trace-require-module",
+      "Print access to require(esm). Options are 'all' (print all usage) and "
+      "'no-node-modules' (excluding usage from the node_modules folder)",
+      &EnvironmentOptions::trace_require_module,
+      kAllowedInEnvvar);
+
   AddOption("--extra-info-on-fatal-exception",
             "hide extra information on fatal exception that causes exit",
             &EnvironmentOptions::extra_info_on_fatal_exception,
